@@ -96,11 +96,13 @@ export const impactCopy = {
         low: 'Low satisfaction - requires immediate attention',
       },
       strongestModule: {
-        default: 'Highest perceived impact at {score}%',
+        default: 'Highest perceived impact module',
+        withScore: 'Highest perceived impact at {score}%',
         noData: 'No survey data available',
       },
       weakestModule: {
-        default: 'Lowest perceived impact at {score}% - needs focus',
+        default: 'Lowest perceived impact module',
+        withScore: 'Lowest perceived impact at {score}% - needs focus',
         noData: 'No survey data available',
       },
       perceptionRealityGap: {

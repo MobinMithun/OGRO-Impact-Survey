@@ -1,33 +1,33 @@
 import { useState } from 'react';
 import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-  ReferenceLine,
 } from 'recharts';
 import { useSurvey } from '../context/SurveyContext';
-import {
-  calculateOSS,
-  calculateModuleImpact,
-  calculateImpactAlignment,
-  calculateTimeSavedNumeric,
-  calculateErrorReductionNumeric,
-  calculateCollectionEfficiency,
-  calculateRealityScore,
-} from '../utils/metrics';
-import { Module, MODULES } from '../types/survey';
 import { impactCopy, Language } from '../data/impactCopy';
 import { surveyCopy } from '../data/surveyCopy';
+import { Module, MODULES } from '../types/survey';
+import {
+  calculateCollectionEfficiency,
+  calculateErrorReductionNumeric,
+  calculateImpactAlignment,
+  calculateModuleImpact,
+  calculateOSS,
+  calculateRealityScore,
+  calculateTimeSavedNumeric,
+} from '../utils/metrics';
 
 /**
  * Mock analytics data source
@@ -522,7 +522,7 @@ export default function ImpactDashboard() {
               dataKey="value"
               label={({ value }) => `${value.toFixed(1)}%`}
             >
-              {satisfactionDonutData.map((entry, index) => (
+              {satisfactionDonutData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={index === 0 ? CHART_COLORS[0] : '#e0e0e0'} />
               ))}
             </Pie>
@@ -690,7 +690,7 @@ export default function ImpactDashboard() {
               }}
             />
             <Scatter dataKey="realityScorePercentage" data={alignmentScatterData} fill={CHART_COLORS[4]}>
-              {alignmentScatterData.map((entry, index) => (
+              {alignmentScatterData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
               ))}
             </Scatter>
