@@ -29,8 +29,10 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
   // Load responses from Supabase on mount (async, non-blocking)
   // Memoize with useCallback to prevent infinite loops in components that depend on it
   const loadResponses = useCallback(async () => {
-    // Skip if Supabase is not configured
+    // Skip if Supabase is not configured - but still set loading to false
     if (!isSupabaseConfigured()) {
+      console.warn('⚠️ Supabase not configured, skipping data load');
+      setLoading(false);
       return;
     }
 
@@ -38,14 +40,18 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
 
+      console.log('🔄 Loading responses from Supabase...');
       const { data, error: fetchError } = await supabase
         .from('survey_responses')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (fetchError) {
+        console.error('❌ Supabase fetch error:', fetchError);
         throw fetchError;
       }
+
+      console.log(`✅ Loaded ${data?.length || 0} responses from Supabase`);
 
       // Transform Supabase data to SurveyResponse format
       const transformedResponses: SurveyResponse[] = (data || []).map((row: any) => {
@@ -85,13 +91,25 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
       });
 
       setResponses(transformedResponses);
+      
+      // Also update localStorage with Supabase data for offline access
+      if (transformedResponses.length > 0) {
+        localStorage.setItem('surveyResponses', JSON.stringify(transformedResponses));
+        console.log('💾 Synced Supabase data to localStorage');
+      }
     } catch (err: any) {
-      console.error('Error loading survey responses:', err);
+      console.error('❌ Error loading survey responses:', err);
       setError(err.message || 'Failed to load survey responses');
       // Fallback to localStorage if Supabase fails
       const stored = localStorage.getItem('surveyResponses');
       if (stored) {
-        setResponses(JSON.parse(stored));
+        console.log('📦 Falling back to localStorage data');
+        try {
+          const parsed = JSON.parse(stored);
+          setResponses(parsed);
+        } catch (parseErr) {
+          console.error('Failed to parse localStorage data:', parseErr);
+        }
       }
     } finally {
       setLoading(false);
@@ -110,12 +128,15 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
       const newResponses = [response, ...responses];
       setResponses(newResponses);
       localStorage.setItem('surveyResponses', JSON.stringify(newResponses));
+      console.log('💾 Saved to localStorage');
 
       // If Supabase is not configured, skip database save
       if (!isSupabaseConfigured()) {
+        console.warn('⚠️ Supabase not configured, skipping database save');
         return;
       }
 
+      console.log('🔄 Saving to Supabase...');
       // Transform SurveyResponse to Supabase format
       const supabaseData = {
         name: response.name || null,
@@ -139,14 +160,17 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
         one_improvement_needed: response.oneImprovementNeeded || null,
       };
 
-      const { error: insertError } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from('survey_responses')
-        .insert([supabaseData]);
+        .insert([supabaseData])
+        .select();
 
       if (insertError) {
         // If Supabase fails, data is already saved to localStorage
-        console.warn('Supabase save failed, but data saved to localStorage:', insertError);
+        console.error('❌ Supabase save failed, but data saved to localStorage:', insertError);
         // Don't throw error - data is already saved locally
+      } else {
+        console.log('✅ Successfully saved to Supabase:', insertedData);
       }
     } catch (err: any) {
       console.error('Error saving survey response:', err);
