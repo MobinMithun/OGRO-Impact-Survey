@@ -27,6 +27,7 @@ import {
 } from '../utils/metrics';
 import { Module, MODULES } from '../types/survey';
 import { impactCopy, Language } from '../data/impactCopy';
+import { surveyCopy } from '../data/surveyCopy';
 
 /**
  * Mock analytics data source
@@ -60,6 +61,11 @@ const mockAnalyticsData = {
   erp: {
     reportBeforeMins: 300,  // Minutes before (5 hours)
     reportAfterMins: 10,    // Minutes after (0.17 hours)
+  },
+  fieldForceMonitoring: {
+    checkInBeforeMins: 120,  // Minutes before (2 hours)
+    checkInAfterMins: 5,     // Minutes after (0.08 hours)
+    trackingAccuracy: 0.95,  // 95% tracking accuracy
   },
 };
 
@@ -124,6 +130,16 @@ function calculateModuleRealityScores() {
     timeSaved: erpTimeSaved,
   });
 
+  // Field Force Monitoring module
+  const fieldForceTimeSaved = calculateTimeSavedNumeric(
+    mockAnalyticsData.fieldForceMonitoring.checkInBeforeMins / 60,
+    mockAnalyticsData.fieldForceMonitoring.checkInAfterMins / 60
+  );
+  const fieldForceRealityScore = calculateRealityScore({
+    timeSaved: fieldForceTimeSaved,
+    accuracy: mockAnalyticsData.fieldForceMonitoring.trackingAccuracy * 100,
+  });
+
   return {
     'Farmer Onboarding': onboardingRealityScore,
     'Bank Panel': bankRealityScore,
@@ -131,6 +147,7 @@ function calculateModuleRealityScores() {
     'Collection Panel': collectionRealityScore,
     'Deposit & Bank Settlement': depositRealityScore,
     'ERP / Dashboards': erpRealityScore,
+    'Field Force Monitoring': fieldForceRealityScore,
   };
 }
 
@@ -170,14 +187,34 @@ const CHART_COLORS = [
 ];
 
 export default function ImpactDashboard() {
-  const { responses } = useSurvey();
+  const { responses, loading, error } = useSurvey();
   const [language, setLanguage] = useState<Language>('bn'); // Default: Bangla
   const moduleRealityScores = calculateModuleRealityScores();
   const copy = impactCopy[language];
+  const surveyCopyLang = surveyCopy[language];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
+        <div className="loading-state">
+          <h1>{copy.title}</h1>
+          <p>{language === 'bn' ? 'ডেটা লোড হচ্ছে...' : 'Loading data...'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error (but still show dashboard with localStorage data)
+  if (error) {
+    console.warn('Supabase error (using localStorage fallback):', error);
+  }
 
   // Calculate key metrics from survey responses
-  const overallSatisfactionScore = calculateOSS(responses);
-  const moduleImpactScores = calculateModuleImpact(responses);
+  // Ensure responses array is valid
+  const validResponses = Array.isArray(responses) ? responses : [];
+  const overallSatisfactionScore = calculateOSS(validResponses);
+  const moduleImpactScores = calculateModuleImpact(validResponses);
 
   // Find strongest and weakest modules based on survey impact
   const modulesWithImpact = Object.entries(moduleImpactScores)
@@ -214,11 +251,14 @@ export default function ImpactDashboard() {
 
   // Chart 2: Module Impact Bar Chart
   const moduleImpactBarData = MODULES
-    .map((module) => ({
-      moduleName: module.length > 20 ? module.substring(0, 20) + '...' : module,
-      fullModuleName: module,
-      impactPercentage: moduleImpactScores[module],
-    }))
+    .map((module) => {
+      const translatedName = surveyCopyLang.options.modules[module] || module;
+      return {
+        moduleName: translatedName.length > 20 ? translatedName.substring(0, 20) + '...' : translatedName,
+        fullModuleName: translatedName,
+        impactPercentage: moduleImpactScores[module],
+      };
+    })
     .filter((item) => item.impactPercentage > 0);
 
   // Chart 3: Before vs After Time Comparison
@@ -232,12 +272,15 @@ export default function ImpactDashboard() {
 
   // Chart 4: Perception vs Reality Comparison
   const perceptionVsRealityData = MODULES
-    .map((module) => ({
-      moduleName: module.length > 15 ? module.substring(0, 15) + '...' : module,
-      fullModuleName: module,
-      surveyImpactPercentage: moduleImpactScores[module],
-      realityScorePercentage: moduleRealityScores[module],
-    }))
+    .map((module) => {
+      const translatedName = surveyCopyLang.options.modules[module] || module;
+      return {
+        moduleName: translatedName.length > 15 ? translatedName.substring(0, 15) + '...' : translatedName,
+        fullModuleName: translatedName,
+        surveyImpactPercentage: moduleImpactScores[module],
+        realityScorePercentage: moduleRealityScores[module],
+      };
+    })
     .filter((item) => item.surveyImpactPercentage > 0 || item.realityScorePercentage > 0);
 
   // Chart 5: Impact Alignment Scatter Plot
@@ -249,9 +292,10 @@ export default function ImpactDashboard() {
         (surveyImpactPercentage / 100) * 5, // Convert 0-100 to 1-5 scale for function
         realityScorePercentage
       );
+      const translatedName = surveyCopyLang.options.modules[module] || module;
       return {
-        moduleName: module.length > 15 ? module.substring(0, 15) + '...' : module,
-        fullModuleName: module,
+        moduleName: translatedName.length > 15 ? translatedName.substring(0, 15) + '...' : translatedName,
+        fullModuleName: translatedName,
         surveyImpactPercentage,
         realityScorePercentage,
         alignmentScore,
@@ -337,7 +381,7 @@ export default function ImpactDashboard() {
           <div className="summary-card">
             <div className="summary-label">{copy.kpis.strongestModule}</div>
             <div className="summary-value">
-              {strongestModule ? strongestModule.module : 'N/A'}
+              {strongestModule ? surveyCopyLang.options.modules[strongestModule.module as Module] || strongestModule.module : 'N/A'}
             </div>
             <div className="summary-description">
               {strongestModule
@@ -351,7 +395,7 @@ export default function ImpactDashboard() {
           <div className="summary-card">
             <div className="summary-label">{copy.kpis.weakestModule}</div>
             <div className="summary-value">
-              {weakestModule ? weakestModule.module : 'N/A'}
+              {weakestModule ? surveyCopyLang.options.modules[weakestModule.module as Module] || weakestModule.module : 'N/A'}
             </div>
             <div className="summary-description">
               {weakestModule

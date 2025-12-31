@@ -7,6 +7,12 @@ export const surveyCopy = {
 
 এই সার্ভেটি সম্পূর্ণ গোপনীয়। এখানে আপনার নাম, ফোন নম্বর বা কোনো ব্যক্তিগত তথ্য সংগ্রহ করা হবে না।  
 সার্ভেটি সম্পন্ন করতে সর্বোচ্চ ৫ মিনিট সময় লাগবে।`,
+    fields: {
+      name: {
+        label: 'নাম',
+        helper: 'এই তথ্যটি শুধুমাত্র অভ্যন্তরীণ রেফারেন্সের জন্য ব্যবহৃত হবে এবং কারও সাথে শেয়ার করা হবে না।',
+      },
+    },
     sections: {
       a: {
         title: 'ভূমিকা ও ব্যবহার সম্পর্কিত তথ্য',
@@ -15,6 +21,7 @@ export const surveyCopy = {
           role: '১. আপনার ভূমিকা',
           usageDuration: '২. OGRO ব্যবহারের সময়কাল',
           modulesUsed: '৩. ব্যবহৃত মডিউল',
+          modulesUsedHelper: 'একাধিক অপশন নির্বাচন করা যাবে।',
         },
       },
       b: {
@@ -110,6 +117,15 @@ export const surveyCopy = {
         'Operations': 'অপারেশন',
         'Finance & Accounts': 'ফাইন্যান্স ও অ্যাকাউন্টস',
       },
+      modules: {
+        'Farmer Onboarding': 'ফার্মার অনবোর্ডিং',
+        'Bank Panel': 'ব্যাংক প্যানেল',
+        'Input Panel': 'ইনপুট প্যানেল',
+        'Collection Panel': 'কালেকশন প্যানেল',
+        'Deposit & Bank Settlement': 'ডিপোজিট ও ব্যাংক সেটেলমেন্ট',
+        'ERP / Dashboards': 'ERP / ড্যাশবোর্ড',
+        'Field Force Monitoring': 'ফিল্ড ফোর্স মনিটরিং',
+      },
     },
     form: {
       required: '*',
@@ -123,6 +139,7 @@ export const surveyCopy = {
       },
       validation: {
         required: 'এই প্রশ্নটি পূরণ করা আবশ্যক',
+        name: 'নাম পূরণ করা আবশ্যক',
         role: 'ভূমিকা নির্বাচন করা আবশ্যক',
         usageDuration: 'ব্যবহারের সময়কাল নির্বাচন করা আবশ্যক',
         modulesUsed: 'অন্তত একটি মডিউল নির্বাচন করা আবশ্যক',
@@ -148,6 +165,12 @@ export const surveyCopy = {
 
 This survey is completely anonymous. No personal data is collected.  
 It takes less than 5 minutes to complete.`,
+    fields: {
+      name: {
+        label: 'Name',
+        helper: 'This information will be used for internal reference only and will not be shared with anyone.',
+      },
+    },
     sections: {
       a: {
         title: 'Role & Usage Context',
@@ -156,6 +179,7 @@ It takes less than 5 minutes to complete.`,
           role: '1. Your Role',
           usageDuration: '2. OGRO Usage Duration',
           modulesUsed: '3. Modules Used',
+          modulesUsedHelper: 'You may select multiple options.',
         },
       },
       b: {
@@ -251,6 +275,15 @@ It takes less than 5 minutes to complete.`,
         'Operations': 'Operations',
         'Finance & Accounts': 'Finance & Accounts',
       },
+      modules: {
+        'Farmer Onboarding': 'Farmer Onboarding',
+        'Bank Panel': 'Bank Panel',
+        'Input Panel': 'Input Panel',
+        'Collection Panel': 'Collection Panel',
+        'Deposit & Bank Settlement': 'Deposit & Bank Settlement',
+        'ERP / Dashboards': 'ERP / Dashboards',
+        'Field Force Monitoring': 'Field Force Monitoring',
+      },
     },
     form: {
       required: '*',
@@ -264,6 +297,7 @@ It takes less than 5 minutes to complete.`,
       },
       validation: {
         required: 'This question is required',
+        name: 'Name is required',
         role: 'Role selection is required',
         usageDuration: 'Usage duration selection is required',
         modulesUsed: 'At least one module must be selected',

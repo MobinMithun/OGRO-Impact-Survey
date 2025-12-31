@@ -17,7 +17,8 @@ export type Module =
   | 'Input Panel'
   | 'Collection Panel'
   | 'Deposit & Bank Settlement'
-  | 'ERP / Dashboards';
+  | 'ERP / Dashboards'
+  | 'Field Force Monitoring';
 
 export type LikertScale = 1 | 2 | 3 | 4 | 5;
 
@@ -45,6 +46,9 @@ export type ErrorFrequencyAfter =
   | 'Medium';
 
 export interface SurveyResponse {
+  // Optional: Respondent Name (for internal reference only)
+  name: string;
+
   // Section A - Context
   role: Role | '';
   usageDuration: UsageDuration | '';
@@ -83,6 +87,7 @@ export const MODULES: Module[] = [
   'Collection Panel',
   'Deposit & Bank Settlement',
   'ERP / Dashboards',
+  'Field Force Monitoring',
 ];
 
 export const ROLES: Role[] = [

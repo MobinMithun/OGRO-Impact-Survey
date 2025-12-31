@@ -1,4 +1,4 @@
-import { SurveyResponse, Module, LikertScale } from '../types/survey';
+import { SurveyResponse, Module, LikertScale, MODULES } from '../types/survey';
 
 /**
  * Converts time string to numeric hours (midpoint of range)
@@ -91,20 +91,17 @@ export function calculateOSS(responses: SurveyResponse[]): number {
 export function calculateModuleImpact(
   responses: SurveyResponse[]
 ): Record<Module, number> {
-  const moduleTotals: Record<Module, { sum: number; count: number }> = {
-    'Farmer Onboarding': { sum: 0, count: 0 },
-    'Bank Panel': { sum: 0, count: 0 },
-    'Input Panel': { sum: 0, count: 0 },
-    'Collection Panel': { sum: 0, count: 0 },
-    'Deposit & Bank Settlement': { sum: 0, count: 0 },
-    'ERP / Dashboards': { sum: 0, count: 0 },
-  };
+  // Initialize moduleTotals dynamically for all modules to prevent missing module errors
+  const moduleTotals: Record<Module, { sum: number; count: number }> = {} as Record<Module, { sum: number; count: number }>;
+  MODULES.forEach((module) => {
+    moduleTotals[module] = { sum: 0, count: 0 };
+  });
 
   // Sum up impact scores for each module
   responses.forEach((response) => {
     response.modulesUsed.forEach((module) => {
       const impact = response.moduleImpact[module];
-      if (impact !== null) {
+      if (impact !== null && moduleTotals[module]) {
         moduleTotals[module].sum += impact;
         moduleTotals[module].count++;
       }
@@ -112,14 +109,11 @@ export function calculateModuleImpact(
   });
 
   // Calculate average per module and convert to percentage (1-5 scale to 0-100)
-  const result: Record<Module, number> = {
-    'Farmer Onboarding': 0,
-    'Bank Panel': 0,
-    'Input Panel': 0,
-    'Collection Panel': 0,
-    'Deposit & Bank Settlement': 0,
-    'ERP / Dashboards': 0,
-  };
+  // Initialize result dynamically for all modules
+  const result: Record<Module, number> = {} as Record<Module, number>;
+  MODULES.forEach((module) => {
+    result[module] = 0;
+  });
 
   Object.keys(moduleTotals).forEach((module) => {
     const { sum, count } = moduleTotals[module as Module];

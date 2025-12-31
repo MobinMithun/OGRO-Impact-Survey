@@ -23,6 +23,7 @@ import {
 } from '../types/survey';
 
 const initialFormData: SurveyResponse = {
+  name: '',
   role: '',
   usageDuration: '',
   modulesUsed: [],
@@ -38,6 +39,7 @@ const initialFormData: SurveyResponse = {
     'Collection Panel': null,
     'Deposit & Bank Settlement': null,
     'ERP / Dashboards': null,
+    'Field Force Monitoring': null,
   },
   timeSpentBefore: '',
   timeSpentAfter: '',
@@ -63,6 +65,11 @@ export default function SurveyForm() {
 
   const validateForm = (): { isValid: boolean; errorCount: number } => {
     const newErrors: Record<string, string> = {};
+
+    // Name - Required
+    if (!formData.name || formData.name.trim() === '') {
+      newErrors.name = copy.form.validation.name;
+    }
 
     // Section A - Required
     if (!formData.role) newErrors.role = copy.form.validation.role;
@@ -101,7 +108,7 @@ export default function SurveyForm() {
     return { isValid: errorCount === 0, errorCount };
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     const validation = validateForm();
@@ -120,14 +127,21 @@ export default function SurveyForm() {
       return;
     }
 
-    // Store response using context
-    addResponse(formData);
-    
-    // Reset form
-    setFormData(initialFormData);
-    
-    // Redirect to /impact
-    navigate('/impact');
+    try {
+      // Store response using context (now async with Supabase)
+      await addResponse(formData);
+      
+      // Reset form
+      setFormData(initialFormData);
+      
+      // Redirect to /impact
+      navigate('/impact');
+    } catch (error) {
+      // Error is handled in context, but we can show a user-friendly message
+      console.error('Failed to submit survey:', error);
+      // Still redirect to show dashboard (data might be saved to localStorage as fallback)
+      navigate('/impact');
+    }
   };
 
   // Update missing fields count when errors change
@@ -244,6 +258,26 @@ export default function SurveyForm() {
       )}
 
       <form onSubmit={handleSubmit}>
+        {/* OPTIONAL NAME FIELD */}
+        <div className="name-field-section">
+          <div className="form-group">
+            <label htmlFor="name">
+              {copy.fields.name.label} <span className="required">{copy.form.required}</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              placeholder={copy.fields.name.label}
+              className={`name-input ${errors.name ? 'error' : ''}`}
+            />
+            {errors.name && <span className="error-message">{errors.name}</span>}
+            <p className="name-helper">{copy.fields.name.helper}</p>
+          </div>
+        </div>
+        <div className="field-divider"></div>
+
         {/* SECTION A — CONTEXT */}
         <section className="survey-section">
           <h2>{copy.sections.a.title}</h2>
@@ -295,6 +329,7 @@ export default function SurveyForm() {
             <label>
               {copy.sections.a.questions.modulesUsed} <span className="required">{copy.form.required}</span>
             </label>
+            <p className="question-helper">{copy.sections.a.questions.modulesUsedHelper}</p>
             <div className="checkbox-group">
               {MODULES.map((module) => (
                 <label key={module} className="checkbox-label">
@@ -303,7 +338,7 @@ export default function SurveyForm() {
                     checked={formData.modulesUsed.includes(module)}
                     onChange={() => handleModuleToggle(module)}
                   />
-                  <span>{module}</span>
+                  <span>{copy.options.modules[module]}</span>
                 </label>
               ))}
             </div>
@@ -371,7 +406,7 @@ export default function SurveyForm() {
                   if (!formData.modulesUsed.includes(module)) return null;
                   return (
                     <tr key={module}>
-                      <td>{module}</td>
+                      <td>{copy.options.modules[module]}</td>
                       {([1, 2, 3, 4, 5] as ImpactLevel[]).map((value) => (
                         <td key={value}>
                           <input
