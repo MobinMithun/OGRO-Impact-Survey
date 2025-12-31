@@ -187,11 +187,25 @@ const CHART_COLORS = [
 ];
 
 export default function ImpactDashboard() {
-  const { responses, loading, error } = useSurvey();
+  const { responses, loading, error, refreshResponses } = useSurvey();
   const [language, setLanguage] = useState<Language>('bn'); // Default: Bangla
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const moduleRealityScores = calculateModuleRealityScores();
   const copy = impactCopy[language];
   const surveyCopyLang = surveyCopy[language];
+
+  // Note: Data is automatically loaded by SurveyContext on mount, so we don't need to call refreshResponses here
+  // This prevents race conditions where both context and dashboard try to load simultaneously
+
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshResponses();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Show loading state
   if (loading) {
@@ -308,7 +322,73 @@ export default function ImpactDashboard() {
   if (responses.length === 0) {
     return (
       <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
-        {/* Language Toggle */}
+        {/* Language Toggle and Refresh Button */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div className="language-toggle">
+            <button
+              className={`lang-btn ${language === 'bn' ? 'active' : ''}`}
+              onClick={() => setLanguage('bn')}
+              type="button"
+            >
+              বাংলা
+            </button>
+            <button
+              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+              onClick={() => setLanguage('en')}
+              type="button"
+            >
+              English
+            </button>
+          </div>
+          
+          {/* Refresh Button and Data Source Indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {error && (
+              <span style={{ color: '#f87171', fontSize: '0.85rem' }}>
+                {language === 'bn' ? '⚠️ localStorage ব্যবহার করা হচ্ছে' : '⚠️ Using localStorage'}
+              </span>
+            )}
+            {!error && !loading && (
+              <span style={{ color: '#60a5fa', fontSize: '0.85rem' }}>
+                {language === 'bn' ? '✅ Supabase থেকে ডেটা' : '✅ Data from Supabase'}
+              </span>
+            )}
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing || loading}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'rgba(96, 165, 250, 0.2)',
+                border: '1px solid rgba(96, 165, 250, 0.3)',
+                borderRadius: '8px',
+                color: '#60a5fa',
+                cursor: isRefreshing || loading ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                opacity: isRefreshing || loading ? 0.5 : 1,
+              }}
+              type="button"
+            >
+              {isRefreshing || loading 
+                ? (language === 'bn' ? '🔄 লোড হচ্ছে...' : '🔄 Loading...')
+                : (language === 'bn' ? '🔄 রিফ্রেশ' : '🔄 Refresh')
+              }
+            </button>
+          </div>
+        </div>
+
+        <h1>{copy.title}</h1>
+        <p className="dashboard-subtitle">{copy.description}</p>
+        <div className="empty-state">
+          <p>{copy.emptyState}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
+      {/* Language Toggle and Refresh Button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div className="language-toggle">
           <button
             className={`lang-btn ${language === 'bn' ? 'active' : ''}`}
@@ -325,41 +405,47 @@ export default function ImpactDashboard() {
             English
           </button>
         </div>
-
-        <h1>{copy.title}</h1>
-        <p className="dashboard-subtitle">{copy.description}</p>
-        <div className="empty-state">
-          <p>{copy.emptyState}</p>
+        
+        {/* Refresh Button and Data Source Indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {error && (
+            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>
+              {language === 'bn' ? '⚠️ localStorage ব্যবহার করা হচ্ছে' : '⚠️ Using localStorage'}
+            </span>
+          )}
+          {!error && !loading && (
+            <span style={{ color: '#60a5fa', fontSize: '0.85rem' }}>
+              {language === 'bn' ? '✅ Supabase থেকে ডেটা' : '✅ Data from Supabase'}
+            </span>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing || loading}
+            style={{
+              padding: '0.5rem 1rem',
+              background: 'rgba(96, 165, 250, 0.2)',
+              border: '1px solid rgba(96, 165, 250, 0.3)',
+              borderRadius: '8px',
+              color: '#60a5fa',
+              cursor: isRefreshing || loading ? 'not-allowed' : 'pointer',
+              fontSize: '0.9rem',
+              opacity: isRefreshing || loading ? 0.5 : 1,
+            }}
+            type="button"
+          >
+            {isRefreshing || loading 
+              ? (language === 'bn' ? '🔄 লোড হচ্ছে...' : '🔄 Loading...')
+              : (language === 'bn' ? '🔄 রিফ্রেশ' : '🔄 Refresh')
+            }
+          </button>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
-      {/* Language Toggle */}
-      <div className="language-toggle">
-        <button
-          className={`lang-btn ${language === 'bn' ? 'active' : ''}`}
-          onClick={() => setLanguage('bn')}
-          type="button"
-        >
-          বাংলা
-        </button>
-        <button
-          className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-          onClick={() => setLanguage('en')}
-          type="button"
-        >
-          English
-        </button>
       </div>
 
       <h1>{copy.title}</h1>
       <p className="dashboard-subtitle">
         {language === 'bn'
-          ? `${responses.length}টি সার্ভে রেসপন্সের উপর বাস্তব মেট্রিক্সের ভিত্তিতে বিশ্লেষণ`
-          : `Analyzing ${responses.length} survey response${responses.length !== 1 ? 's' : ''} against real-world metrics`}
+          ? `${validResponses.length}টি সার্ভে রেসপন্সের উপর বাস্তব মেট্রিক্সের ভিত্তিতে বিশ্লেষণ`
+          : `Analyzing ${validResponses.length} survey response${validResponses.length !== 1 ? 's' : ''} against real-world metrics`}
       </p>
 
       {/* Executive Summary Section */}

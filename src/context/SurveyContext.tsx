@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { ImpactLevel, Module, MODULES, SurveyResponse } from '../types/survey';
 
@@ -27,7 +27,8 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   // Load responses from Supabase on mount (async, non-blocking)
-  const loadResponses = async () => {
+  // Memoize with useCallback to prevent infinite loops in components that depend on it
+  const loadResponses = useCallback(async () => {
     // Skip if Supabase is not configured
     if (!isSupabaseConfigured()) {
       return;
@@ -95,11 +96,11 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array - function doesn't depend on any props or state
 
   useEffect(() => {
     loadResponses();
-  }, []);
+  }, [loadResponses]);
 
   const addResponse = async (response: SurveyResponse) => {
     try {
