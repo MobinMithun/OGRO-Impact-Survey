@@ -146,15 +146,29 @@ export default function SurveyForm() {
   }, [errors]);
 
   const handleModuleToggle = (module: Module) => {
+    const isDeselecting = formData.modulesUsed.includes(module);
+    
     setFormData((prev) => ({
       ...prev,
-      modulesUsed: prev.modulesUsed.includes(module)
+      modulesUsed: isDeselecting
         ? prev.modulesUsed.filter((m) => m !== module)
         : [...prev.modulesUsed, module],
-      moduleImpact: prev.modulesUsed.includes(module)
+      moduleImpact: isDeselecting
         ? { ...prev.moduleImpact, [module]: null }
         : prev.moduleImpact,
     }));
+    
+    // Clear validation error for this module's impact when deselecting
+    if (isDeselecting) {
+      const errorKey = `moduleImpact_${module}`;
+      if (errors[errorKey]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[errorKey];
+          return newErrors;
+        });
+      }
+    }
   };
 
   const handleLikertChange = (field: keyof SurveyResponse, value: LikertScale) => {
