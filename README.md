@@ -152,16 +152,17 @@ The Impact Dashboard calculates and displays:
 
 ### Netlify
 
-1. Build the project:
-   ```bash
-   npm run build
-   ```
+**⚠️ Important:** For Supabase to work on Netlify, you MUST set environment variables in the Netlify dashboard.
 
-2. Deploy the `dist` folder to Netlify
+**Quick Steps:**
+1. Deploy to Netlify (via Git or Netlify CLI)
+2. Go to **Site settings** → **Environment variables**
+3. Add:
+   - `VITE_SUPABASE_URL` = Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` = Your Supabase anon key
+4. **Redeploy** the site (environment variables require a new build)
 
-3. Add environment variables in Netlify dashboard:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+**Detailed instructions:** See [NETLIFY_SETUP.md](./NETLIFY_SETUP.md) for complete setup guide.
 
 ### Other Platforms
 
@@ -188,12 +189,21 @@ The app can be deployed to any static hosting service:
 
 ## 🐛 Troubleshooting
 
-### Data not appearing in Supabase
+### Data not appearing in Supabase (Local Development)
 
 1. Check browser console for error messages
 2. Verify `.env` file has correct credentials
 3. Ensure RLS policies are set up correctly
 4. Check Supabase logs in the dashboard
+
+### Data not appearing in Supabase (Netlify)
+
+1. **Check environment variables are set** in Netlify dashboard
+2. **Verify variable names start with `VITE_`** (required for Vite)
+3. **Redeploy after adding variables** (they're only included at build time)
+4. Check browser console for Supabase configuration logs
+5. Look for `🔍 Supabase Configuration Check` in console
+6. See [NETLIFY_SETUP.md](./NETLIFY_SETUP.md) for detailed troubleshooting
 
 ### Dashboard shows no data
 
@@ -201,6 +211,7 @@ The app can be deployed to any static hosting service:
 2. Click the refresh button on the dashboard
 3. Check browser console for loading errors
 4. Ensure Supabase credentials are correct
+5. Check the data source indicator on the dashboard (should show "Data from Supabase" when working)
 
 ### Build errors
 

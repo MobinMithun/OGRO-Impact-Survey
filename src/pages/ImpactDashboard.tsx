@@ -18,6 +18,7 @@ import {
 import { useSurvey } from '../context/SurveyContext';
 import { impactCopy, Language } from '../data/impactCopy';
 import { surveyCopy } from '../data/surveyCopy';
+import { getSupabaseConfigStatus } from '../lib/supabase';
 import { Module, MODULES } from '../types/survey';
 import {
   calculateCollectionEfficiency,
@@ -193,6 +194,7 @@ export default function ImpactDashboard() {
   const moduleRealityScores = calculateModuleRealityScores();
   const copy = impactCopy[language];
   const surveyCopyLang = surveyCopy[language];
+  const supabaseStatus = getSupabaseConfigStatus();
 
   // Note: Data is automatically loaded by SurveyContext on mount, so we don't need to call refreshResponses here
   // This prevents race conditions where both context and dashboard try to load simultaneously
@@ -342,14 +344,19 @@ export default function ImpactDashboard() {
           </div>
           
           {/* Refresh Button and Data Source Indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {error && (
-              <span style={{ color: '#f87171', fontSize: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            {!supabaseStatus.isConfigured && (
+              <span style={{ color: '#fbbf24', fontSize: '0.85rem' }} title={language === 'bn' ? 'Supabase কনফিগার করা হয়নি' : 'Supabase not configured'}>
+                {language === 'bn' ? '⚠️ Supabase কনফিগার নেই' : '⚠️ Supabase not configured'}
+              </span>
+            )}
+            {error && supabaseStatus.isConfigured && (
+              <span style={{ color: '#f87171', fontSize: '0.85rem' }} title={error}>
                 {language === 'bn' ? '⚠️ localStorage ব্যবহার করা হচ্ছে' : '⚠️ Using localStorage'}
               </span>
             )}
-            {!error && !loading && (
-              <span style={{ color: '#60a5fa', fontSize: '0.85rem' }}>
+            {!error && !loading && supabaseStatus.isConfigured && (
+              <span style={{ color: '#34d399', fontSize: '0.85rem' }}>
                 {language === 'bn' ? '✅ Supabase থেকে ডেটা' : '✅ Data from Supabase'}
               </span>
             )}
@@ -406,19 +413,24 @@ export default function ImpactDashboard() {
           </button>
         </div>
         
-        {/* Refresh Button and Data Source Indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {error && (
-            <span style={{ color: '#f87171', fontSize: '0.85rem' }}>
-              {language === 'bn' ? '⚠️ localStorage ব্যবহার করা হচ্ছে' : '⚠️ Using localStorage'}
-            </span>
-          )}
-          {!error && !loading && (
-            <span style={{ color: '#60a5fa', fontSize: '0.85rem' }}>
-              {language === 'bn' ? '✅ Supabase থেকে ডেটা' : '✅ Data from Supabase'}
-            </span>
-          )}
-          <button
+          {/* Refresh Button and Data Source Indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            {!supabaseStatus.isConfigured && (
+              <span style={{ color: '#fbbf24', fontSize: '0.85rem' }} title={language === 'bn' ? 'Supabase কনফিগার করা হয়নি' : 'Supabase not configured'}>
+                {language === 'bn' ? '⚠️ Supabase কনফিগার নেই' : '⚠️ Supabase not configured'}
+              </span>
+            )}
+            {error && supabaseStatus.isConfigured && (
+              <span style={{ color: '#f87171', fontSize: '0.85rem' }} title={error}>
+                {language === 'bn' ? '⚠️ localStorage ব্যবহার করা হচ্ছে' : '⚠️ Using localStorage'}
+              </span>
+            )}
+            {!error && !loading && supabaseStatus.isConfigured && (
+              <span style={{ color: '#34d399', fontSize: '0.85rem' }}>
+                {language === 'bn' ? '✅ Supabase থেকে ডেটা' : '✅ Data from Supabase'}
+              </span>
+            )}
+            <button
             onClick={handleRefresh}
             disabled={isRefreshing || loading}
             style={{
