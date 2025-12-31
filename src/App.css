@@ -1,39 +1,135 @@
+/* Survey Form - Dark Mode */
 .survey-form-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: white;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Anek Bangla font when Bangla is active */
+.survey-form-container.bangla-font {
+  font-family: 'Anek Bangla', 'Fira Code', sans-serif;
+}
+
+.survey-form-container.bangla-font h1,
+.survey-form-container.bangla-font h2,
+.survey-form-container.bangla-font p,
+.survey-form-container.bangla-font label,
+.survey-form-container.bangla-font .section-description,
+.survey-form-container.bangla-font .survey-description {
+  font-family: 'Anek Bangla', sans-serif;
+}
+
+/* Language Toggle */
+.language-toggle {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  gap: 0;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 8px;
+  padding: 0.25rem;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.lang-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.lang-btn:hover {
+  color: #cbd5e1;
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.lang-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+/* Survey Description */
+.survey-description {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  line-height: 1.8;
+}
+
+.survey-description p {
+  color: #cbd5e1;
+  font-size: 1rem;
+  white-space: pre-line;
+  margin: 0;
 }
 
 .survey-form-container h1 {
-  color: #2c3e50;
+  color: #60a5fa;
   margin-bottom: 2rem;
-  font-size: 2rem;
+  font-size: 2.5rem;
   text-align: center;
+  font-weight: 600;
+  text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+  letter-spacing: -0.5px;
 }
 
 .survey-section {
   margin-bottom: 3rem;
-  padding: 1.5rem;
-  background-color: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.survey-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(96, 165, 250, 0.4);
 }
 
 .survey-section h2 {
-  color: #34495e;
+  color: #60a5fa;
   margin-bottom: 1rem;
   font-size: 1.5rem;
-  border-bottom: 2px solid #3498db;
+  border-bottom: 2px solid #3b82f6;
   padding-bottom: 0.5rem;
+  font-weight: 500;
 }
 
 .section-description {
-  color: #666;
+  color: #94a3b8;
   font-size: 0.9rem;
   margin-bottom: 1rem;
   font-style: italic;
+}
+
+.scale-hint {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  font-style: normal;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(96, 165, 250, 0.1);
 }
 
 .form-group {
@@ -43,35 +139,40 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 500;
+  color: #cbd5e1;
+  font-size: 0.95rem;
 }
 
 .required {
-  color: #e74c3c;
+  color: #f87171;
 }
 
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 8px;
   font-size: 1rem;
-  font-family: inherit;
-  transition: border-color 0.2s;
+  font-family: 'Fira Code', monospace;
+  background: rgba(15, 23, 42, 0.6);
+  color: #e4e4e7;
+  transition: all 0.2s;
 }
 
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2), 0 0 20px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.8);
 }
 
 .form-group select.error,
 .form-group textarea.error {
-  border-color: #e74c3c;
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
 }
 
 .checkbox-group {
@@ -84,21 +185,25 @@
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
 .checkbox-label:hover {
-  background-color: #f0f0f0;
+  background: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.3);
+  transform: translateX(4px);
 }
 
 .checkbox-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  accent-color: #60a5fa;
 }
 
 .likert-scale {
@@ -112,27 +217,43 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  min-width: 50px;
+  padding: 0.75rem 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  min-width: 90px;
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.4);
 }
 
 .likert-option:hover {
-  background-color: #f0f0f0;
+  background: rgba(96, 165, 250, 0.15);
+  border-color: rgba(96, 165, 250, 0.4);
+  transform: translateY(-2px);
 }
 
 .likert-option input[type="radio"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
+  accent-color: #60a5fa;
 }
 
-.likert-option span {
-  font-size: 0.9rem;
-  color: #555;
+.likert-option .likert-number {
+  font-size: 1.25rem;
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.likert-option .likert-label {
+  font-size: 0.7rem;
+  color: #cbd5e1;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90px;
+  word-wrap: break-word;
 }
 
 .impact-matrix {
@@ -143,13 +264,14 @@
 .impact-matrix table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
   overflow: hidden;
+  border: 1px solid rgba(96, 165, 250, 0.2);
 }
 
 .impact-matrix thead {
-  background-color: #34495e;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
   color: white;
 }
 
@@ -157,77 +279,240 @@
 .impact-matrix td {
   padding: 0.75rem;
   text-align: left;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(96, 165, 250, 0.1);
 }
 
 .impact-matrix th {
   font-weight: 600;
   text-align: center;
+  color: white;
 }
 
 .impact-matrix td:first-child {
   font-weight: 500;
-  background-color: #f8f9fa;
+  background: rgba(30, 41, 59, 0.5);
+  color: #cbd5e1;
 }
 
 .impact-matrix td {
   text-align: center;
+  color: #e4e4e7;
 }
 
 .impact-matrix input[type="radio"] {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  accent-color: #60a5fa;
 }
 
 .info-message {
-  color: #7f8c8d;
+  color: #94a3b8;
   font-style: italic;
   margin-top: 1rem;
 }
 
 .error-message {
   display: block;
-  color: #e74c3c;
+  color: #f87171;
   font-size: 0.875rem;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
 }
 
 .form-actions {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid #e0e0e0;
+  border-top: 1px solid rgba(96, 165, 250, 0.2);
   text-align: center;
 }
 
 .submit-button {
-  background-color: #3498db;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
   color: white;
   border: none;
-  padding: 1rem 2rem;
+  padding: 1rem 3rem;
   font-size: 1.1rem;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+  font-family: 'Fira Code', monospace;
+  letter-spacing: 0.5px;
 }
 
 .submit-button:hover {
-  background-color: #2980b9;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
 }
 
 .submit-button:active {
   transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(96, 165, 250, 0.3);
 }
 
-/* Impact page */
+/* Alert Popup - Red Alert for Missing Fields */
+.alert-popup {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+  max-width: 600px;
+  width: 90%;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.alert-content {
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+  border: 2px solid #f87171;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  box-shadow: 0 8px 32px rgba(248, 113, 113, 0.4), 0 0 20px rgba(248, 113, 113, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.alert-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.alert-text {
+  flex: 1;
+  color: #fee2e2;
+}
+
+.alert-text strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.alert-text p {
+  margin: 0.25rem 0;
+  color: #fee2e2;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.alert-hint {
+  font-size: 0.85rem !important;
+  color: #fecaca !important;
+  font-style: italic;
+}
+
+.alert-close {
+  background: transparent;
+  border: none;
+  color: #fee2e2;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.alert-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Footer */
+.app-footer {
+  margin-top: 4rem;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(96, 165, 250, 0.2);
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-content p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  background: rgba(15, 23, 42, 0.4);
+  transition: all 0.3s;
+  font-family: 'Fira Code', monospace;
+}
+
+.github-link:hover {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.2);
+  color: #93c5fd;
+}
+
+.github-link svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.github-link span {
+  font-size: 1rem;
+}
+
+/* Impact page - Dark Mode */
 .impact-page {
   max-width: 600px;
   margin: 0 auto;
   padding: 3rem 2rem;
   text-align: center;
-  background-color: white;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -236,15 +521,207 @@
 }
 
 .impact-page h1 {
-  color: #27ae60;
+  color: #34d399;
   font-size: 2.5rem;
   margin-bottom: 1rem;
+  font-weight: 600;
+  text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
 }
 
 .impact-page p {
-  color: #555;
+  color: #cbd5e1;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
+}
+
+/* Impact Dashboard - Dark Mode */
+.impact-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.impact-dashboard > h1 {
+  color: #60a5fa;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+  letter-spacing: -0.5px;
+}
+
+.dashboard-subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+/* Executive Summary Section - Dark Mode */
+.summary-section {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.summary-section h2 {
+  color: #60a5fa;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.summary-card {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #60a5fa;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+}
+
+.summary-description {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.chart-container {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.chart-container h2 {
+  color: #60a5fa;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.chart-insight {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-left: 4px solid #60a5fa;
+  color: #cbd5e1;
+  line-height: 1.7;
+  border-radius: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.1);
+}
+
+.chart-insight strong {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.quadrant-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.quadrant-label {
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border-left: 3px solid #60a5fa;
+  color: #cbd5e1;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.quadrant-label strong {
+  color: #60a5fa;
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.custom-tooltip {
+  background: rgba(15, 23, 42, 0.95);
+  padding: 1rem;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.custom-tooltip p {
+  margin: 0.25rem 0;
+  color: #e4e4e7;
+}
+
+.custom-tooltip strong {
+  color: #60a5fa;
+}
+
+/* Recharts dark mode overrides */
+.recharts-wrapper {
+  filter: brightness(0.95) contrast(1.1);
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: #94a3b8 !important;
+  font-family: 'Fira Code', monospace !important;
+}
+
+.recharts-legend-item-text {
+  color: #cbd5e1 !important;
+  font-family: 'Fira Code', monospace !important;
+}
+
+.recharts-tooltip-label {
+  color: #60a5fa !important;
+  font-family: 'Fira Code', monospace !important;
+  font-weight: 600 !important;
 }
 
 /* Responsive design */
@@ -253,8 +730,16 @@
     padding: 1rem;
   }
 
+  .language-toggle {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 1.5rem;
+    align-self: flex-end;
+  }
+
   .survey-section {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .likert-scale {
@@ -269,5 +754,12 @@
   .impact-matrix td {
     padding: 0.5rem;
   }
-}
 
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .quadrant-labels {
+    grid-template-columns: 1fr;
+  }
+}
