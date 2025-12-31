@@ -303,7 +303,7 @@ export default function ImpactDashboard() {
       const surveyImpactPercentage = moduleImpactScores[module];
       const realityScorePercentage = moduleRealityScores[module];
       const alignmentScore = calculateImpactAlignment(
-        (surveyImpactPercentage / 100) * 5, // Convert 0-100 to 1-5 scale for function
+        (surveyImpactPercentage / 100) * 4 + 1, // Convert 0-100% to 1-5 Likert scale
         realityScorePercentage
       );
       const translatedName = surveyCopyLang.options.modules[module] || module;
