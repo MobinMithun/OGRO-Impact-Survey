@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   PieChart,
   Pie,
@@ -25,6 +26,7 @@ import {
   calculateRealityScore,
 } from '../utils/metrics';
 import { Module, MODULES } from '../types/survey';
+import { impactCopy, Language } from '../data/impactCopy';
 
 /**
  * Mock analytics data source
@@ -150,7 +152,7 @@ function convertTimeStringToHours(timeString: string): number {
  * Determines which quadrant a module falls into based on survey perception vs reality
  * Helps identify areas needing attention: training, communication, or product improvement
  */
-function determineAlignmentQuadrant(surveyImpactPercentage: number, realityScorePercentage: number): string {
+function determineAlignmentQuadrant(surveyImpactPercentage: number, realityScorePercentage: number): 'High–High' | 'High–Low' | 'Low–High' | 'Low–Low' {
   if (surveyImpactPercentage >= 50 && realityScorePercentage >= 50) return 'High–High';
   if (surveyImpactPercentage >= 50 && realityScorePercentage < 50) return 'High–Low';
   if (surveyImpactPercentage < 50 && realityScorePercentage >= 50) return 'Low–High';
@@ -169,7 +171,9 @@ const CHART_COLORS = [
 
 export default function ImpactDashboard() {
   const { responses } = useSurvey();
+  const [language, setLanguage] = useState<Language>('bn'); // Default: Bangla
   const moduleRealityScores = calculateModuleRealityScores();
+  const copy = impactCopy[language];
 
   // Calculate key metrics from survey responses
   const overallSatisfactionScore = calculateOSS(responses);
@@ -221,7 +225,7 @@ export default function ImpactDashboard() {
   const timeComparisonData = responses
     .filter((response) => response.timeSpentBefore && response.timeSpentAfter)
     .map((response, index) => ({
-      responseLabel: `Response ${index + 1}`,
+      responseLabel: language === 'bn' ? `রেসপন্স ${index + 1}` : `Response ${index + 1}`,
       hoursBeforeOGRO: convertTimeStringToHours(response.timeSpentBefore),
       hoursAfterOGRO: convertTimeStringToHours(response.timeSpentAfter),
     }));
@@ -256,62 +260,117 @@ export default function ImpactDashboard() {
     })
     .filter((item) => item.surveyImpactPercentage > 0 || item.realityScorePercentage > 0);
 
+  // Handle empty state
+  if (responses.length === 0) {
+    return (
+      <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
+        {/* Language Toggle */}
+        <div className="language-toggle">
+          <button
+            className={`lang-btn ${language === 'bn' ? 'active' : ''}`}
+            onClick={() => setLanguage('bn')}
+            type="button"
+          >
+            বাংলা
+          </button>
+          <button
+            className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+            onClick={() => setLanguage('en')}
+            type="button"
+          >
+            English
+          </button>
+        </div>
+
+        <h1>{copy.title}</h1>
+        <p className="dashboard-subtitle">{copy.description}</p>
+        <div className="empty-state">
+          <p>{copy.emptyState}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="impact-dashboard">
-      <h1>OGRO Impact Dashboard</h1>
+    <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
+      {/* Language Toggle */}
+      <div className="language-toggle">
+        <button
+          className={`lang-btn ${language === 'bn' ? 'active' : ''}`}
+          onClick={() => setLanguage('bn')}
+          type="button"
+        >
+          বাংলা
+        </button>
+        <button
+          className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+          onClick={() => setLanguage('en')}
+          type="button"
+        >
+          English
+        </button>
+      </div>
+
+      <h1>{copy.title}</h1>
       <p className="dashboard-subtitle">
-        Analyzing {responses.length} survey response{responses.length !== 1 ? 's' : ''} against real-world metrics
+        {language === 'bn'
+          ? `${responses.length}টি সার্ভে রেসপন্সের উপর বাস্তব মেট্রিক্সের ভিত্তিতে বিশ্লেষণ`
+          : `Analyzing ${responses.length} survey response${responses.length !== 1 ? 's' : ''} against real-world metrics`}
       </p>
 
       {/* Executive Summary Section */}
       <div className="summary-section">
-        <h2>Executive Summary</h2>
+        <h2>{copy.executiveSummary}</h2>
         <div className="summary-cards">
           <div className="summary-card">
-            <div className="summary-label">Overall Satisfaction</div>
+            <div className="summary-label">{copy.kpis.overallSatisfaction}</div>
             <div className="summary-value">{overallSatisfactionScore.toFixed(1)}%</div>
             <div className="summary-description">
               {overallSatisfactionScore >= 70
-                ? 'Strong user satisfaction across all key impact areas'
+                ? copy.kpiDescriptions.overallSatisfaction.high
                 : overallSatisfactionScore >= 50
-                ? 'Moderate satisfaction with room for improvement'
-                : 'Low satisfaction - requires immediate attention'}
+                ? copy.kpiDescriptions.overallSatisfaction.medium
+                : copy.kpiDescriptions.overallSatisfaction.low}
             </div>
           </div>
 
           <div className="summary-card">
-            <div className="summary-label">Strongest Module</div>
+            <div className="summary-label">{copy.kpis.strongestModule}</div>
             <div className="summary-value">
               {strongestModule ? strongestModule.module : 'N/A'}
             </div>
             <div className="summary-description">
               {strongestModule
-                ? `Highest perceived impact at ${strongestModule.score.toFixed(1)}%`
-                : 'No survey data available'}
+                ? (language === 'bn'
+                    ? copy.kpiDescriptions.strongestModule.withScore.replace('{score}', strongestModule.score.toFixed(1))
+                    : copy.kpiDescriptions.strongestModule.default.replace('{score}', strongestModule.score.toFixed(1)))
+                : copy.kpiDescriptions.strongestModule.noData}
             </div>
           </div>
 
           <div className="summary-card">
-            <div className="summary-label">Weakest Module</div>
+            <div className="summary-label">{copy.kpis.weakestModule}</div>
             <div className="summary-value">
               {weakestModule ? weakestModule.module : 'N/A'}
             </div>
             <div className="summary-description">
               {weakestModule
-                ? `Lowest perceived impact at ${weakestModule.score.toFixed(1)}% - needs focus`
-                : 'No survey data available'}
+                ? (language === 'bn'
+                    ? copy.kpiDescriptions.weakestModule.withScore.replace('{score}', weakestModule.score.toFixed(1))
+                    : copy.kpiDescriptions.weakestModule.default.replace('{score}', weakestModule.score.toFixed(1)))
+                : copy.kpiDescriptions.weakestModule.noData}
             </div>
           </div>
 
           <div className="summary-card">
-            <div className="summary-label">Perception vs Reality Gap</div>
+            <div className="summary-label">{copy.kpis.perceptionRealityGap}</div>
             <div className="summary-value">{averagePerceptionRealityGap.toFixed(1)}%</div>
             <div className="summary-description">
               {averagePerceptionRealityGap <= 10
-                ? 'Excellent alignment - users accurately perceive impact'
+                ? copy.kpiDescriptions.perceptionRealityGap.excellent
                 : averagePerceptionRealityGap <= 20
-                ? 'Good alignment with minor gaps to address'
-                : 'Significant gap - review communication and training'}
+                ? copy.kpiDescriptions.perceptionRealityGap.good
+                : copy.kpiDescriptions.perceptionRealityGap.significant}
             </div>
           </div>
         </div>
@@ -319,7 +378,7 @@ export default function ImpactDashboard() {
 
       {/* Chart 1: Overall Satisfaction (Donut) */}
       <div className="chart-container">
-        <h2>1. Overall Satisfaction Score (OSS)</h2>
+        <h2>{copy.charts.overallSatisfaction.title}</h2>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
@@ -344,16 +403,13 @@ export default function ImpactDashboard() {
           </PieChart>
         </ResponsiveContainer>
         <p className="chart-insight">
-          <strong>Business Insight:</strong> The Overall Satisfaction Score aggregates user perceptions across five critical impact areas:
-          reduced manual work, daily time savings, improved data accuracy, easier tracking, and overall efficiency gains.
-          Scores above 70% indicate strong user satisfaction and validate OGRO's value proposition. Lower scores suggest
-          areas where additional training, feature improvements, or communication may be needed to maximize perceived value.
+          <strong>{language === 'bn' ? 'ব্যবসায়িক অন্তর্দৃষ্টি:' : 'Business Insight:'}</strong> {copy.charts.overallSatisfaction.insight}
         </p>
       </div>
 
       {/* Chart 2: Module Impact Bar Chart */}
       <div className="chart-container">
-        <h2>2. Module Impact (Survey Responses)</h2>
+        <h2>{copy.charts.moduleImpact.title}</h2>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={moduleImpactBarData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -363,10 +419,10 @@ export default function ImpactDashboard() {
               textAnchor="end"
               height={100}
               interval={0}
-              label={{ value: 'OGRO Modules', position: 'insideBottom', offset: -5 }}
+              label={{ value: copy.charts.moduleImpact.xAxisLabel, position: 'insideBottom', offset: -5 }}
             />
             <YAxis 
-              label={{ value: 'Survey Impact %', angle: -90, position: 'insideLeft' }}
+              label={{ value: copy.charts.moduleImpact.yAxisLabel, angle: -90, position: 'insideLeft' }}
               domain={[0, 100]}
             />
             <Tooltip 
@@ -376,56 +432,48 @@ export default function ImpactDashboard() {
                   return (
                     <div className="custom-tooltip">
                       <p><strong>{data.fullModuleName}</strong></p>
-                      <p>Impact: {data.impactPercentage.toFixed(1)}%</p>
+                      <p>{language === 'bn' ? 'প্রভাব:' : 'Impact:'} {data.impactPercentage.toFixed(1)}%</p>
                     </div>
                   );
                 }
                 return null;
               }}
             />
-            <Bar dataKey="impactPercentage" fill={CHART_COLORS[1]} name="Impact %" />
+            <Bar dataKey="impactPercentage" fill={CHART_COLORS[1]} name={copy.charts.moduleImpact.yAxisLabel} />
           </BarChart>
         </ResponsiveContainer>
         <p className="chart-insight">
-          <strong>Business Insight:</strong> This visualization shows the average perceived impact of each OGRO module based on
-          user survey responses. Higher bars indicate modules where users report stronger positive impact, suggesting successful
-          adoption and value realization. Modules with lower scores may benefit from targeted training, feature enhancements, or
-          better communication about their benefits. This data helps prioritize which modules to promote, improve, or provide
-          additional support for.
+          <strong>{language === 'bn' ? 'ব্যবসায়িক অন্তর্দৃষ্টি:' : 'Business Insight:'}</strong> {copy.charts.moduleImpact.insight}
         </p>
       </div>
 
       {/* Chart 3: Before vs After Time Chart */}
       <div className="chart-container">
-        <h2>3. Time Spent: Before vs After OGRO</h2>
+        <h2>{copy.charts.timeComparison.title}</h2>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={timeComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="responseLabel"
-              label={{ value: 'Survey Responses', position: 'insideBottom', offset: -5 }}
+              label={{ value: copy.charts.timeComparison.xAxisLabel, position: 'insideBottom', offset: -5 }}
             />
             <YAxis 
-              label={{ value: 'Hours Spent', angle: -90, position: 'insideLeft' }}
+              label={{ value: copy.charts.timeComparison.yAxisLabel, angle: -90, position: 'insideLeft' }}
             />
             <Tooltip />
             <Legend />
-            <Bar dataKey="hoursBeforeOGRO" fill={CHART_COLORS[3]} name="Before OGRO" />
-            <Bar dataKey="hoursAfterOGRO" fill={CHART_COLORS[1]} name="After OGRO" />
+            <Bar dataKey="hoursBeforeOGRO" fill={CHART_COLORS[3]} name={copy.charts.timeComparison.beforeLabel} />
+            <Bar dataKey="hoursAfterOGRO" fill={CHART_COLORS[1]} name={copy.charts.timeComparison.afterLabel} />
           </BarChart>
         </ResponsiveContainer>
         <p className="chart-insight">
-          <strong>Business Insight:</strong> This comparison demonstrates the tangible time savings achieved through OGRO implementation.
-          The reduction in time spent (difference between bars) quantifies efficiency gains and validates the ROI of the platform.
-          Consistent reductions across multiple responses indicate reliable, measurable time savings. This data is valuable for
-          demonstrating value to stakeholders, justifying continued investment, and identifying which workflows benefit most
-          from automation.
+          <strong>{language === 'bn' ? 'ব্যবসায়িক অন্তর্দৃষ্টি:' : 'Business Insight:'}</strong> {copy.charts.timeComparison.insight}
         </p>
       </div>
 
       {/* Chart 4: Perception vs Reality Dual Bar */}
       <div className="chart-container">
-        <h2>4. Perception vs Reality</h2>
+        <h2>{copy.charts.perceptionReality.title}</h2>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={perceptionVsRealityData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -435,10 +483,10 @@ export default function ImpactDashboard() {
               textAnchor="end"
               height={100}
               interval={0}
-              label={{ value: 'OGRO Modules', position: 'insideBottom', offset: -5 }}
+              label={{ value: copy.charts.perceptionReality.xAxisLabel, position: 'insideBottom', offset: -5 }}
             />
             <YAxis 
-              label={{ value: 'Impact %', angle: -90, position: 'insideLeft' }}
+              label={{ value: copy.charts.perceptionReality.yAxisLabel, angle: -90, position: 'insideLeft' }}
               domain={[0, 100]}
             />
             <Tooltip 
@@ -448,9 +496,9 @@ export default function ImpactDashboard() {
                   return (
                     <div className="custom-tooltip">
                       <p><strong>{data.fullModuleName}</strong></p>
-                      <p>Survey Impact: {data.surveyImpactPercentage.toFixed(1)}%</p>
-                      <p>Reality Score: {data.realityScorePercentage.toFixed(1)}%</p>
-                      <p>Gap: {Math.abs(data.surveyImpactPercentage - data.realityScorePercentage).toFixed(1)}%</p>
+                      <p>{copy.charts.perceptionReality.surveyLabel}: {data.surveyImpactPercentage.toFixed(1)}%</p>
+                      <p>{copy.charts.perceptionReality.realityLabel}: {data.realityScorePercentage.toFixed(1)}%</p>
+                      <p>{language === 'bn' ? 'পার্থক্য:' : 'Gap:'} {Math.abs(data.surveyImpactPercentage - data.realityScorePercentage).toFixed(1)}%</p>
                     </div>
                   );
                 }
@@ -458,38 +506,33 @@ export default function ImpactDashboard() {
               }}
             />
             <Legend />
-            <Bar dataKey="surveyImpactPercentage" fill={CHART_COLORS[0]} name="Survey Impact (Perception)" />
-            <Bar dataKey="realityScorePercentage" fill={CHART_COLORS[2]} name="Reality Score (Metrics)" />
+            <Bar dataKey="surveyImpactPercentage" fill={CHART_COLORS[0]} name={copy.charts.perceptionReality.surveyLabel} />
+            <Bar dataKey="realityScorePercentage" fill={CHART_COLORS[2]} name={copy.charts.perceptionReality.realityLabel} />
           </BarChart>
         </ResponsiveContainer>
         <p className="chart-insight">
-          <strong>Business Insight:</strong> This critical comparison reveals alignment between user perceptions (from surveys) and
-          actual measured impact (from system analytics). When bars are similar, user perceptions accurately reflect reality,
-          indicating good communication and user awareness. Large gaps suggest opportunities: when perception is higher than reality,
-          users may be overestimating value (training needed). When reality exceeds perception, users may be undervaluing the system
-          (communication/training gap). This analysis helps identify where to invest in user education, feature promotion, or
-          product improvements.
+          <strong>{language === 'bn' ? 'ব্যবসায়িক অন্তর্দৃষ্টি:' : 'Business Insight:'}</strong> {copy.charts.perceptionReality.insight}
         </p>
       </div>
 
       {/* Chart 5: Impact Alignment Scatter Plot */}
       <div className="chart-container">
-        <h2>5. Impact Alignment Analysis</h2>
+        <h2>{copy.charts.alignmentAnalysis.title}</h2>
         <ResponsiveContainer width="100%" height={500}>
           <ScatterChart margin={{ top: 20, right: 30, bottom: 60, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               type="number"
               dataKey="surveyImpactPercentage"
-              name="Survey Impact"
-              label={{ value: 'Survey Impact % (User Perception)', position: 'insideBottom', offset: -5 }}
+              name={copy.charts.perceptionReality.surveyLabel}
+              label={{ value: copy.charts.alignmentAnalysis.xAxisLabel, position: 'insideBottom', offset: -5 }}
               domain={[0, 100]}
             />
             <YAxis
               type="number"
               dataKey="realityScorePercentage"
-              name="Reality Score"
-              label={{ value: 'Reality Score % (Measured Impact)', angle: -90, position: 'insideLeft' }}
+              name={copy.charts.perceptionReality.realityLabel}
+              label={{ value: copy.charts.alignmentAnalysis.yAxisLabel, angle: -90, position: 'insideLeft' }}
               domain={[0, 100]}
             />
             <ReferenceLine x={50} stroke="#666" strokeDasharray="3 3" label={{ value: '50%', position: 'top' }} />
@@ -499,12 +542,17 @@ export default function ImpactDashboard() {
               content={({ active, payload }) => {
                 if (active && payload && payload[0]) {
                   const data = payload[0].payload;
+                  const quadrantText = 
+                    data.quadrant === 'High–High' ? copy.charts.alignmentAnalysis.quadrants.highHigh
+                    : data.quadrant === 'High–Low' ? copy.charts.alignmentAnalysis.quadrants.highLow
+                    : data.quadrant === 'Low–High' ? copy.charts.alignmentAnalysis.quadrants.lowHigh
+                    : copy.charts.alignmentAnalysis.quadrants.lowLow;
                   return (
                     <div className="custom-tooltip">
                       <p><strong>{data.fullModuleName}</strong></p>
-                      <p>Survey Impact: {data.surveyImpactPercentage.toFixed(1)}%</p>
-                      <p>Reality Score: {data.realityScorePercentage.toFixed(1)}%</p>
-                      <p>Quadrant: {data.quadrant}</p>
+                      <p>{copy.charts.perceptionReality.surveyLabel}: {data.surveyImpactPercentage.toFixed(1)}%</p>
+                      <p>{copy.charts.perceptionReality.realityLabel}: {data.realityScorePercentage.toFixed(1)}%</p>
+                      <p>{language === 'bn' ? 'কোয়াড্রেন্ট:' : 'Quadrant:'} {quadrantText}</p>
                     </div>
                   );
                 }
@@ -520,32 +568,27 @@ export default function ImpactDashboard() {
         </ResponsiveContainer>
         <div className="quadrant-labels">
           <div className="quadrant-label top-left">
-            <strong>High–Low:</strong> Training gap (users don't see the value despite strong metrics)
+            <strong>{language === 'bn' ? 'উচ্চ–কম:' : 'High–Low:'}</strong> {copy.charts.alignmentAnalysis.quadrants.highLow}
           </div>
           <div className="quadrant-label top-right">
-            <strong>High–High:</strong> Strong success (perception matches reality - ideal state)
+            <strong>{language === 'bn' ? 'উচ্চ–উচ্চ:' : 'High–High:'}</strong> {copy.charts.alignmentAnalysis.quadrants.highHigh}
           </div>
           <div className="quadrant-label bottom-left">
-            <strong>Low–Low:</strong> Product issue (needs improvement in both perception and reality)
+            <strong>{language === 'bn' ? 'কম–কম:' : 'Low–Low:'}</strong> {copy.charts.alignmentAnalysis.quadrants.lowLow}
           </div>
           <div className="quadrant-label bottom-right">
-            <strong>Low–High:</strong> UX / comms gap (value exists but not communicated effectively)
+            <strong>{language === 'bn' ? 'কম–উচ্চ:' : 'Low–High:'}</strong> {copy.charts.alignmentAnalysis.quadrants.lowHigh}
           </div>
         </div>
         <p className="chart-insight">
-          <strong>Business Insight:</strong> This strategic scatter plot maps each module's position based on survey perception
-          (X-axis) and measured reality (Y-axis). Points in the top-right quadrant (High–High) represent successful modules where
-          both perception and reality are strong - these are success stories to replicate. The other quadrants highlight areas
-          needing targeted intervention: High–Low suggests training gaps where users don't recognize value, Low–High indicates
-          communication gaps where value exists but isn't perceived, and Low–Low signals product issues requiring feature improvements.
-          This visualization helps leadership prioritize resource allocation across training, communication, and product development.
+          <strong>{language === 'bn' ? 'ব্যবসায়িক অন্তর্দৃষ্টি:' : 'Business Insight:'}</strong> {copy.charts.alignmentAnalysis.insight}
         </p>
       </div>
 
       {/* Footer */}
       <footer className="app-footer">
         <div className="footer-content">
-          <p>Follow me on GitHub</p>
+          <p>{copy.footer.follow}</p>
           <a 
             href="https://github.com/MobinMithun" 
             target="_blank" 

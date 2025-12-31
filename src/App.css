@@ -5,6 +5,7 @@
   padding: 2rem;
   min-height: 100vh;
   position: relative;
+  z-index: 10;
 }
 
 /* Anek Bangla font when Bangla is active */
@@ -540,6 +541,23 @@
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
+  position: relative;
+  z-index: 10;
+}
+
+/* Anek Bangla font when Bangla is active */
+.impact-dashboard.bangla-font {
+  font-family: 'Anek Bangla', 'Fira Code', sans-serif;
+}
+
+.impact-dashboard.bangla-font h1,
+.impact-dashboard.bangla-font h2,
+.impact-dashboard.bangla-font p,
+.impact-dashboard.bangla-font .dashboard-subtitle,
+.impact-dashboard.bangla-font .summary-label,
+.impact-dashboard.bangla-font .summary-description,
+.impact-dashboard.bangla-font .chart-insight {
+  font-family: 'Anek Bangla', sans-serif;
 }
 
 .impact-dashboard > h1 {
@@ -550,6 +568,22 @@
   font-weight: 600;
   text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
   letter-spacing: -0.5px;
+  margin-top: 3rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  font-size: 1.1rem;
+  margin: 0;
 }
 
 .dashboard-subtitle {
