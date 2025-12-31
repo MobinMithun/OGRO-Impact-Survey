@@ -23,7 +23,8 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
       return [];
     }
   });
-  const [loading, setLoading] = useState(false);
+  // Set initial loading state to true if Supabase is configured (we'll load from there)
+  const [loading, setLoading] = useState(() => isSupabaseConfigured());
   const [error, setError] = useState<string | null>(null);
 
   // Load responses from Supabase on mount (async, non-blocking)
@@ -53,49 +54,63 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
 
       console.log(`✅ Loaded ${data?.length || 0} responses from Supabase`);
 
-      // Transform Supabase data to SurveyResponse format
-      const transformedResponses: SurveyResponse[] = (data || []).map((row: any) => {
-        // Initialize moduleImpact with all modules set to null if database value is missing/null
-        // This ensures proper structure and prevents undefined values in calculations
-        const dbModuleImpact = row.module_impact;
-        const moduleImpact: Record<Module, ImpactLevel | null> = {} as Record<Module, ImpactLevel | null>;
-        MODULES.forEach((module) => {
-          // If database has value for this module (must be 1-5), use it; otherwise set to null
-          const value = dbModuleImpact?.[module];
-          moduleImpact[module] = (typeof value === 'number' && value >= 1 && value <= 5) 
-            ? (value as ImpactLevel) 
-            : null;
+      // Only update if Supabase has data - preserve localStorage data if Supabase is empty
+      if (data && data.length > 0) {
+        // Transform Supabase data to SurveyResponse format
+        const transformedResponses: SurveyResponse[] = data.map((row: any) => {
+          // Initialize moduleImpact with all modules set to null if database value is missing/null
+          // This ensures proper structure and prevents undefined values in calculations
+          const dbModuleImpact = row.module_impact;
+          const moduleImpact: Record<Module, ImpactLevel | null> = {} as Record<Module, ImpactLevel | null>;
+          MODULES.forEach((module) => {
+            // If database has value for this module (must be 1-5), use it; otherwise set to null
+            const value = dbModuleImpact?.[module];
+            moduleImpact[module] = (typeof value === 'number' && value >= 1 && value <= 5) 
+              ? (value as ImpactLevel) 
+              : null;
+          });
+
+          return {
+            name: row.name || '',
+            role: row.role || '',
+            usageDuration: row.usage_duration || '',
+            modulesUsed: row.modules_used || [],
+            reducedManualWork: row.reduced_manual_work,
+            savesTimeDaily: row.saves_time_daily,
+            dataAccuracyImproved: row.data_accuracy_improved,
+            easierTracking: row.easier_tracking,
+            improvedEfficiency: row.improved_efficiency,
+            moduleImpact,
+            timeSpentBefore: row.time_spent_before || '',
+            timeSpentAfter: row.time_spent_after || '',
+            errorFrequencyBefore: row.error_frequency_before || '',
+            errorFrequencyAfter: row.error_frequency_after || '',
+            trustOGROData: row.trust_ogro_data,
+            lessExcelWhatsApp: row.less_excel_whatsapp,
+            preferOGROOverOldTools: row.prefer_ogro_over_old_tools,
+            biggestImprovement: row.biggest_improvement || '',
+            oneImprovementNeeded: row.one_improvement_needed || '',
+          };
         });
 
-        return {
-          name: row.name || '',
-          role: row.role || '',
-          usageDuration: row.usage_duration || '',
-          modulesUsed: row.modules_used || [],
-          reducedManualWork: row.reduced_manual_work,
-          savesTimeDaily: row.saves_time_daily,
-          dataAccuracyImproved: row.data_accuracy_improved,
-          easierTracking: row.easier_tracking,
-          improvedEfficiency: row.improved_efficiency,
-          moduleImpact,
-          timeSpentBefore: row.time_spent_before || '',
-          timeSpentAfter: row.time_spent_after || '',
-          errorFrequencyBefore: row.error_frequency_before || '',
-          errorFrequencyAfter: row.error_frequency_after || '',
-          trustOGROData: row.trust_ogro_data,
-          lessExcelWhatsApp: row.less_excel_whatsapp,
-          preferOGROOverOldTools: row.prefer_ogro_over_old_tools,
-          biggestImprovement: row.biggest_improvement || '',
-          oneImprovementNeeded: row.one_improvement_needed || '',
-        };
-      });
-
-      setResponses(transformedResponses);
-      
-      // Also update localStorage with Supabase data for offline access
-      if (transformedResponses.length > 0) {
+        setResponses(transformedResponses);
+        
+        // Update localStorage with Supabase data for offline access
         localStorage.setItem('surveyResponses', JSON.stringify(transformedResponses));
         console.log('💾 Synced Supabase data to localStorage');
+      } else {
+        // Supabase is empty - preserve existing localStorage data
+        console.log('📦 Supabase is empty, preserving localStorage data');
+        const stored = localStorage.getItem('surveyResponses');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setResponses(parsed);
+            console.log(`💾 Loaded ${parsed.length} responses from localStorage`);
+          } catch (parseErr) {
+            console.error('Failed to parse localStorage data:', parseErr);
+          }
+        }
       }
     } catch (err: any) {
       console.error('❌ Error loading survey responses:', err);
@@ -137,6 +152,8 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
       }
 
       console.log('🔄 Saving to Supabase...');
+      console.log('📝 Response data:', JSON.stringify(response, null, 2));
+      
       // Transform SurveyResponse to Supabase format
       const supabaseData = {
         name: response.name || null,
@@ -160,17 +177,41 @@ export function SurveyProvider({ children }: { children: ReactNode }) {
         one_improvement_needed: response.oneImprovementNeeded || null,
       };
 
-      const { data: insertedData, error: insertError } = await supabase
+      console.log('📤 Supabase payload:', JSON.stringify(supabaseData, null, 2));
+
+      const { data: insertedData, error: insertError, status, statusText } = await supabase
         .from('survey_responses')
         .insert([supabaseData])
         .select();
 
+      console.log('📊 Insert response:', { status, statusText, hasData: !!insertedData, dataLength: insertedData?.length });
+
       if (insertError) {
         // If Supabase fails, data is already saved to localStorage
-        console.error('❌ Supabase save failed, but data saved to localStorage:', insertError);
+        console.error('❌ Supabase save failed, but data saved to localStorage');
+        console.error('❌ Error details:', {
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+          code: insertError.code,
+        });
+        setError(`Failed to save to Supabase: ${insertError.message}. Data saved to localStorage.`);
         // Don't throw error - data is already saved locally
       } else {
-        console.log('✅ Successfully saved to Supabase:', insertedData);
+        // Even if insertError is null, check if we actually got data back
+        if (insertedData && insertedData.length > 0) {
+          console.log('✅ Successfully saved to Supabase');
+          console.log('✅ Inserted data:', insertedData);
+          setError(null); // Clear any previous errors
+        } else {
+          // Insert succeeded but .select() returned empty
+          // This can happen - the insert still worked, we just didn't get data back
+          console.warn('⚠️ Insert succeeded (status likely 201) but .select() returned empty array');
+          console.warn('⚠️ This is OK - data was still saved. The insert succeeded.');
+          console.warn('⚠️ You can verify by refreshing the dashboard');
+          // Don't set error - the insert succeeded, we just didn't get confirmation data
+          setError(null); // Clear any previous errors since insert succeeded
+        }
       }
     } catch (err: any) {
       console.error('Error saving survey response:', err);

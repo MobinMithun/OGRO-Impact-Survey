@@ -318,8 +318,8 @@ export default function ImpactDashboard() {
     })
     .filter((item) => item.surveyImpactPercentage > 0 || item.realityScorePercentage > 0);
 
-  // Handle empty state
-  if (responses.length === 0) {
+  // Handle empty state (only show after loading completes)
+  if (!loading && validResponses.length === 0) {
     return (
       <div className={`impact-dashboard ${language === 'bn' ? 'bangla-font' : ''}`}>
         {/* Language Toggle and Refresh Button */}
